@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImpactOS — M3 Físico-Financeiro</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#EDEEF2;min-height:100vh}
+.db{background:#F4F6F9;width:100%;min-width:960px;border:1px solid #E2E6ED;min-height:100vh}
+
+/* ── TOPBAR ── */
+.tb{background:#fff;border-bottom:1px solid #E8ECF1;padding:0 24px;height:64px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.tbl{display:flex;align-items:center;min-width:200px;margin-right:12px;flex-shrink:0}
+.brand-logo{height:38px;width:auto;max-width:240px;display:block;object-fit:contain}
+.sb-btn{background:none;border:none;cursor:pointer;color:#8896A8;padding:4px;display:flex;align-items:center;border-radius:6px}
+.sb-btn:hover{background:#F4F6F9}
+.srch{flex:1;max-width:280px;display:flex;align-items:center;gap:7px;background:#F4F6F9;border:1px solid #E2E6ED;border-radius:8px;padding:0 12px;height:36px}
+.srch input{border:none;background:none;font-size:12.5px;color:#4A5568;outline:none;width:100%;font-family:'Inter',sans-serif}
+.srch i{color:#B0BAC6;font-size:15px;flex-shrink:0}
+.tbr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-icon{width:36px;height:36px;border-radius:9px;border:1px solid #E8ECF1;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7A8D;transition:background .15s}
+.tb-icon:hover{background:#F4F6F9}
+.tb-icon i{font-size:17px}
+.tb-notif{position:relative}
+.tb-notif .dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:#E05050;border-radius:50%;border:1.5px solid #fff}
+.uinfo{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#1A2332;font-weight:500;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s}
+.uinfo:hover{background:#F4F6F9}
+.uav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5A9E00,#3D7A00);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* ── BODY / SIDEBAR ── */
+.body{display:flex;min-height:calc(100vh - 64px)}
+.sb{background:#fff;border-right:1px solid #E8ECF1;padding:16px 0;width:180px;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sbl{font-size:9.5px;font-weight:600;color:#B0BAC6;letter-spacing:.7px;text-transform:uppercase;padding:10px 16px 5px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;font-size:12.5px;color:#6B7A8D;cursor:pointer;white-space:nowrap;border-left:2px solid transparent;transition:background .12s,color .12s}
+.ni:hover{background:#F8FAFB;color:#3A4556}
+.ni.on{color:#5A9E00;background:#F0F8E8;border-left-color:#5A9E00;font-weight:500}
+.ni i{font-size:16px;flex-shrink:0}
+.sb-footer{margin-top:auto;border-top:1px solid #EEF0F3;padding-top:8px}
+
+/* ── MAIN ── */
+.main{flex:1;min-width:0;overflow:auto;display:flex;flex-direction:column}
+
+/* ── PAGE HEADER ── */
+.ph{padding:18px 24px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.ph-breadcrumb{display:flex;align-items:center;gap:5px;font-size:11px;color:#B0BAC6;margin-bottom:5px}
+.ph-breadcrumb span{color:#8896A8}
+.ph-breadcrumb .sep{opacity:.5}
+.ph-title{font-size:16px;font-weight:600;color:#1A2332;display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.ph-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.ph-badge.g{background:#EAF5D4;color:#3A6E00;border:1px solid #C0DC90}
+.ph-badge.a{background:#FEF3DB;color:#B07A10;border:1px solid #F0D898}
+.ph-badge.t{background:#D6F0F5;color:#186878;border:1px solid #A8D8E8}
+.ph-sub{font-size:11.5px;color:#8896A8}
+.ph-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-outline{background:#fff;border:1px solid #E2E6ED;color:#4A5568}
+.btn-outline:hover{border-color:#B0BAC6;color:#1A2332}
+.btn-primary{background:#5A9E00;color:#fff}
+.btn-primary:hover{background:#4A8A00}
+.btn i{font-size:15px}
+
+/* ── KPI STRIP ── */
+.kr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0 24px;margin-bottom:14px}
+.kc{background:#fff;border:1px solid #E8ECF1;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.kc-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.kci{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.kci i{font-size:18px}
+.kci.g{background:#EAF5D4;color:#4A8A00}
+.kci.t{background:#D6F0F5;color:#1A7A8A}
+.kci.a{background:#FEF3DB;color:#B07A10}
+.kci.p{background:#EDE9FE;color:#6340C0}
+.kci.r{background:#FDE8E8;color:#C04040}
+.kl{font-size:10.5px;color:#8896A8;margin-bottom:4px}
+.kv{font-size:19px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:#1A2332;line-height:1;margin-bottom:5px}
+.kd{font-size:10.5px;display:flex;align-items:center;gap:3px}
+.kd.up{color:#4A8A00}.kd.dn{color:#C04040}.kd.nt{color:#8896A8}
+
+/* ── CONTENT AREA ── */
+.content{padding:0 24px 32px}
+
+/* ── TOOLBAR ── */
+.tbar{margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tab-group{display:flex;background:#F4F6F9;border:1px solid #E2E6ED;border-radius:8px;padding:3px;gap:2px}
+.tab{font-size:12px;color:#6B7A8D;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tab i{font-size:14px}
+.tab.on{background:#fff;color:#1A2332;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.sel{font-size:11.5px;color:#6B7A8D;background:#fff;border:1px solid #E2E6ED;border-radius:6px;padding:5px 8px;outline:none;font-family:'Inter',sans-serif;cursor:pointer}
+
+/* ── PANELS ── */
+.pn{background:#fff;border:1px solid #E8ECF1;border-radius:12px;padding:16px 18px}
+.pt{font-size:12px;font-weight:600;color:#1A2332;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.pt-tabs{display:flex;gap:2px}
+.pt-tab{font-size:11px;color:#8896A8;padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s}
+.pt-tab.on{color:#5A9E00;background:#F0F8E8;font-weight:500}
+.pt-tab:hover{color:#3A4556}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.g21{display:grid;grid-template-columns:1.55fr 1fr;gap:12px;margin-bottom:12px}
+.g12{display:grid;grid-template-columns:1fr 1.55fr;gap:12px;margin-bottom:12px}
+.g211{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;margin-bottom:12px}
+
+/* ── PROGRESS ── */
+.pg{margin-bottom:9px}
+.pgm{display:flex;justify-content:space-between;font-size:11px;color:#6B7A8D;margin-bottom:4px}
+.pgb{height:5px;background:#EEF0F3;border-radius:3px}
+.pgb-md{height:7px;background:#EEF0F3;border-radius:3px}
+.pgb-lg{height:10px;background:#EEF0F3;border-radius:5px}
+.pgf{height:100%;border-radius:inherit}
+
+/* ── TABLE ── */
+.t-wrap{background:#fff;border:1px solid #E8ECF1;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.t-head{display:grid;gap:8px;padding:9px 16px;background:#F8FAFB;border-bottom:1px solid #EEF0F3}
+.th{font-size:10.5px;font-weight:600;color:#8896A8;letter-spacing:.3px;text-transform:uppercase;display:flex;align-items:center;gap:3px}
+.t-row{display:grid;gap:8px;padding:10px 16px;border-bottom:1px solid #F0F2F5;align-items:center;cursor:pointer;transition:background .12s}
+.t-row:last-child{border-bottom:none}
+.t-row:hover{background:#F8FAFB}
+.td{font-size:12px;color:#3A4556;display:flex;align-items:center;gap:6px;min-width:0}
+.td.mono{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:500}
+.proj-name{font-weight:500;color:#1A2332;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-sub{font-size:10.5px;color:#8896A8;margin-top:1px}
+
+/* ── TAGS / FLAGS ── */
+.tag{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.tag.dir{background:#D6F0F5;color:#1A7A8A}
+.tag.osc{background:#EDE9FE;color:#6340C0}
+.tag.lei{background:#FEF3DB;color:#B07A10}
+.tag.sap{background:#EAF5D4;color:#3A6E00}
+.tag.pend{background:#FEF3DB;color:#B07A10}
+.flag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.flag.ok{background:#EAF5D4;color:#3A6E00;border:1px solid #B8DC80}
+.flag.at{background:#FEF3DB;color:#B07A10;border:1px solid #F0D898}
+.flag.ri{background:#FDE8E8;color:#C04040;border:1px solid #F0C0C0}
+.flag.sap{background:#EAF5D4;color:#3A6E00;border:1px solid #B8DC80}
+.flag.pend{background:#F0F2F5;color:#4A5568;border:1px solid #E2E6ED}
+
+/* ── ALERTS ── */
+.al{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border-radius:8px;margin-bottom:7px}
+.al:last-child{margin-bottom:0}
+.al.wn{background:#FFFBF0;border:1px solid #F0D898}
+.al.ok{background:#F2FAE8;border:1px solid #C0DC90}
+.al.fo{background:#EFF8FC;border:1px solid #A8D8E8}
+.al.ri{background:#FEF0F0;border:1px solid #F0C0C0}
+.ai{font-size:16px;margin-top:1px;flex-shrink:0}
+.ai.wn{color:#B07A10}.ai.ok{color:#4A8A00}.ai.fo{color:#1A7A8A}.ai.ri{color:#C04040}
+.at{font-size:11.5px;font-weight:600;display:block;margin-bottom:2px}
+.at.wn{color:#8A5C08}.at.ok{color:#3A6E00}.at.fo{color:#186878}.at.ri{color:#C04040}
+.ab{font-size:11px;color:#5A6878;line-height:1.5}
+
+/* ── SAP PIPELINE ── */
+.sap-flow{display:flex;align-items:center;gap:0;overflow-x:auto;padding:4px 0 8px}
+.sap-step{display:flex;flex-direction:column;align-items:center;min-width:88px;position:relative}
+.sap-step:not(:last-child)::after{content:'›';position:absolute;right:-10px;top:18px;font-size:18px;color:#B0BAC6;font-weight:300}
+.sap-node{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;font-size:18px;transition:all .2s;cursor:default}
+.sap-node.done{background:#EAF5D4;color:#4A8A00;border:1.5px solid #B8DC80}
+.sap-node.curr{background:#D6F0F5;color:#1A7A8A;border:1.5px solid #A8D8E8;box-shadow:0 0 0 3px rgba(58,170,187,.15)}
+.sap-node.wait{background:#F0F2F5;color:#B0BAC6;border:1.5px solid #E2E6ED}
+.sap-node.err{background:#FDE8E8;color:#C04040;border:1.5px solid #F0C0C0}
+.sap-label{font-size:10px;font-weight:600;color:#4A5568;text-align:center;line-height:1.3}
+.sap-sub{font-size:9px;color:#8896A8;text-align:center;margin-top:2px}
+
+/* ── DESEMBOLSO ITEM ── */
+.desemb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#F8FAFB;border:1px solid #F0F2F5;border-radius:8px;margin-bottom:7px;cursor:pointer;transition:all .15s}
+.desemb-item:last-child{margin-bottom:0}
+.desemb-item:hover{border-color:#D0D8E0;background:#fff}
+.desemb-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8896A8;width:36px;flex-shrink:0}
+.desemb-body{flex:1;min-width:0}
+.desemb-title{font-size:12.5px;font-weight:500;color:#1A2332;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desemb-meta{font-size:10.5px;color:#8896A8;margin-top:1px}
+.desemb-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:#1A2332;flex-shrink:0}
+
+/* ── CI ITEM ── */
+.ci-item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0F2F5;cursor:pointer;transition:background .12s}
+.ci-item:last-child{border-bottom:none}
+.ci-item:hover{background:#F8FAFB}
+.ci-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── MINI STAT ── */
+.ms{background:#F8FAFB;border:1px solid #EEF0F3;border-radius:8px;padding:10px 12px;text-align:center}
+.ms-n{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:#1A2332;line-height:1;margin-bottom:2px}
+.ms-l{font-size:10px;color:#8896A8}
+
+/* ── CURVA S ── */
+.curva-wrap{height:150px;position:relative;width:100%}
+
+/* ── DRAWER ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:flex;align-items:flex-start;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.drawer{width:500px;background:#fff;height:100vh;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.15);transform:translateX(30px);transition:transform .25s ease}
+.modal-overlay.open .drawer{transform:translateX(0)}
+.dr-hd{padding:20px 24px 16px;border-bottom:1px solid #EEF0F3;display:flex;align-items:flex-start;gap:10px}
+.dr-hd-bar{width:4px;align-self:stretch;border-radius:4px;flex-shrink:0;margin-top:2px}
+.dr-title{font-size:15px;font-weight:600;color:#1A2332;margin-bottom:3px;flex:1}
+.dr-sub{font-size:12px;color:#8896A8}
+.dr-close{width:30px;height:30px;border-radius:6px;border:1px solid #E8ECF1;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8896A8;flex-shrink:0}
+.dr-close:hover{background:#F4F6F9;color:#1A2332}
+.dr-tabs{display:flex;border-bottom:1px solid #EEF0F3;padding:0 24px}
+.dr-tab{font-size:12px;color:#8896A8;padding:10px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.dr-tab.on{color:#1A2332;border-bottom-color:#5A9E00;font-weight:500}
+.dr-body{padding:20px 24px}
+.dr-sec{margin-bottom:20px}
+.dr-sec-t{font-size:10.5px;font-weight:600;color:#B0BAC6;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #F0F2F5}
+.dr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dr-f .dr-l{font-size:10.5px;color:#8896A8;margin-bottom:3px}
+.dr-f .dr-v{font-size:13px;color:#1A2332;font-weight:500}
+.dr-f .dr-v.mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.dr-actions{display:flex;gap:8px;padding:16px 24px;border-top:1px solid #EEF0F3;background:#FAFBFC}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(90,158,0,.25);border-radius:3px}
+
+@media(max-width:1200px){.g3,.g211{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.g21,.g12,.g2{grid-template-columns:1fr}.kr{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.brand-logo{height:32px}.tb{height:56px;padding:0 16px}.sb{display:none}}
+</style>
+</head>
+<body>
+<div class="db">
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tbl"><img src="data:image/jpeg;base64,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" alt="ImpactOS" class="brand-logo"></div>
+  <button class="sb-btn"><i class="ti ti-menu-2" style="font-size:19px"></i></button>
+  <div class="srch">
+    <i class="ti ti-search"></i>
+    <input type="text" placeholder="Buscar repasses, CIs, desembolsos, projetos…">
+  </div>
+  <div class="tbr">
+    <div class="tb-icon"><i class="ti ti-sun"></i></div>
+    <div class="tb-icon tb-notif"><i class="ti ti-bell"></i><span class="dot"></span></div>
+    <div class="uinfo"><div class="uav">EL</div>Erika Lima<i class="ti ti-chevron-down" style="font-size:13px;color:#8896A8"></i></div>
+  </div>
+</div>
+
+<div class="body">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sbl">Gestão</div>
+  <div class="ni"><i class="ti ti-layout-dashboard"></i>Visão executiva</div>
+  <div class="ni"><i class="ti ti-folder"></i>Portfólio</div>
+  <div class="ni"><i class="ti ti-chart-bar"></i>MEAL &amp; impacto</div>
+  <div class="ni on"><i class="ti ti-cash"></i>Físico-financeiro</div>
+  <div class="ni"><i class="ti ti-users"></i>Beneficiários</div>
+  <div class="sbl">Operação</div>
+  <div class="ni"><i class="ti ti-building-community"></i>Parceiros &amp; OSCs</div>
+  <div class="ni"><i class="ti ti-files"></i>Documentação</div>
+  <div class="ni"><i class="ti ti-link"></i>Integração SAP</div>
+  <div class="sbl">Conselho</div>
+  <div class="ni"><i class="ti ti-presentation"></i>Relatório executivo</div>
+  <div class="ni"><i class="ti ti-shield-check"></i>Compliance</div>
+  <div class="sb-footer">
+    <div class="ni"><i class="ti ti-settings"></i>Configurações</div>
+    <div class="ni"><i class="ti ti-help"></i>Suporte</div>
+    <div class="ni" style="color:#C04040"><i class="ti ti-logout"></i>Sair</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="ph">
+    <div>
+      <div class="ph-breadcrumb">
+        <span>Plataforma</span><span class="sep">›</span><span>Gestão</span><span class="sep">›</span><span style="color:#1A2332">Físico-Financeiro</span>
+      </div>
+      <div class="ph-title">
+        Gestão Físico-Financeira
+        <span class="ph-badge g">M3 Core</span>
+        <span class="ph-badge a">SAP-ready</span>
+        <span class="ph-badge t">ERP integrado</span>
+      </div>
+      <div class="ph-sub">Portfólio ISP 2024–2025 &nbsp;·&nbsp; 34 projetos &nbsp;·&nbsp; Q2 em execução &nbsp;·&nbsp; Sincronizado há 12 min</div>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-outline"><i class="ti ti-download"></i> Carta trimestral</button>
+      <button class="btn btn-outline"><i class="ti ti-receipt"></i> Gerar CI</button>
+      <button class="btn btn-primary" onclick="openDrawer()"><i class="ti ti-plus"></i> Novo desembolso</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kr">
+    <div class="kc">
+      <div class="kc-accent" style="background:#5A9E00"></div>
+      <div class="kci g"><i class="ti ti-coins"></i></div>
+      <div class="kl">Orçamento aprovado</div>
+      <div class="kv">R$&thinsp;14,2M</div>
+      <div class="kd nt">Portfólio 2025</div>
+    </div>
+    <div class="kc">
+      <div class="kc-accent" style="background:#3AAABB"></div>
+      <div class="kci t"><i class="ti ti-send"></i></div>
+      <div class="kl">Desembolsado</div>
+      <div class="kv">R$&thinsp;8,7M</div>
+      <div class="kd up"><i class="ti ti-trending-up"></i>61% do orçado</div>
+    </div>
+    <div class="kc">
+      <div class="kc-accent" style="background:#D4922A"></div>
+      <div class="kci a"><i class="ti ti-hourglass"></i></div>
+      <div class="kl">A desembolsar</div>
+      <div class="kv">R$&thinsp;5,5M</div>
+      <div class="kd nt">Q3/Q4 2025</div>
+    </div>
+    <div class="kc">
+      <div class="kc-accent" style="background:#C04040"></div>
+      <div class="kci r"><i class="ti ti-alert-triangle"></i></div>
+      <div class="kl">Desvio financeiro</div>
+      <div class="kv">-8,3%</div>
+      <div class="kd dn"><i class="ti ti-arrow-down"></i>3 projetos críticos</div>
+    </div>
+    <div class="kc">
+      <div class="kc-accent" style="background:#6340C0"></div>
+      <div class="kci p"><i class="ti ti-rotate-clockwise"></i></div>
+      <div class="kl">CIs geradas — Q2</div>
+      <div class="kv">18</div>
+      <div class="kd nt">12 processadas SAP</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TOOLBAR -->
+    <div class="tbar">
+      <div class="tab-group">
+        <div class="tab on"  onclick="sv('execucao',this)"><i class="ti ti-chart-line"></i>Execução</div>
+        <div class="tab"     onclick="sv('desembolsos',this)"><i class="ti ti-send"></i>Desembolsos</div>
+        <div class="tab"     onclick="sv('ci-sap',this)"><i class="ti ti-cpu"></i>CI &amp; SAP</div>
+        <div class="tab"     onclick="sv('prestacao',this)"><i class="ti ti-clipboard-check"></i>Prestação de contas</div>
+        <div class="tab"     onclick="sv('conciliacao',this)"><i class="ti ti-building-bank"></i>Conciliação</div>
+      </div>
+      <div class="tbar-right">
+        <select class="sel"><option>Período: 2025 completo</option><option>Q2 2025</option><option>Q1 2025</option><option>2024 completo</option></select>
+        <button class="btn btn-outline" style="padding:5px 11px;font-size:12px"><i class="ti ti-filter"></i> Filtros</button>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: EXECUÇÃO ══════ -->
+    <div id="v-execucao">
+
+      <div class="g211">
+        <!-- CURVA S -->
+        <div class="pn">
+          <div class="pt">Curva S — execução físico-financeira do portfólio
+            <div class="pt-tabs">
+              <span class="pt-tab on" onclick="ptTab(this)">Portfólio</span>
+              <span class="pt-tab" onclick="ptTab(this)">Por programa</span>
+              <span class="pt-tab" onclick="ptTab(this)">Por projeto</span>
+            </div>
+          </div>
+          <div class="curva-wrap"><canvas id="curvaChart"></canvas></div>
+          <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7A8D"><div style="width:9px;height:9px;border-radius:3px;background:#5A9E00"></div>Exec. financeira real</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7A8D"><div style="width:9px;height:9px;border-radius:3px;background:#3AAABB;opacity:.6"></div>Exec. física real</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7A8D"><div style="width:9px;height:3px;background:#D4922A;border-radius:2px"></div>Linha de base planejada</div>
+          </div>
+        </div>
+
+        <!-- EXECUÇÃO POR PROGRAMA -->
+        <div class="pn" style="display:flex;flex-direction:column;gap:0">
+          <div class="pt" style="margin-bottom:10px">Execução por programa</div>
+          <div class="pg"><div class="pgm"><span>Educação e Capacitação</span><span style="color:#5A9E00;font-weight:600">91%</span></div><div class="pgb-md"><div class="pgf" style="width:91%;background:#5A9E00"></div></div></div>
+          <div class="pg"><div class="pgm"><span>Desenvolvimento Econômico</span><span style="color:#5A9E00;font-weight:600">78%</span></div><div class="pgb-md"><div class="pgf" style="width:78%;background:#5A9E00"></div></div></div>
+          <div class="pg"><div class="pgm"><span>Saúde e Bem-Estar</span><span style="color:#E05050;font-weight:600">42%</span></div><div class="pgb-md"><div class="pgf" style="width:42%;background:#E05050"></div></div></div>
+          <div class="pg"><div class="pgm"><span>Meio Ambiente</span><span style="color:#3AAABB;font-weight:600">85%</span></div><div class="pgb-md"><div class="pgf" style="width:85%;background:#3AAABB"></div></div></div>
+          <div class="pg" style="margin-bottom:0"><div class="pgm"><span>Cultura e Esporte</span><span style="color:#5A9E00;font-weight:600">94%</span></div><div class="pgb-md"><div class="pgf" style="width:94%;background:#5A9E00"></div></div></div>
+        </div>
+
+        <!-- DESVIOS -->
+        <div class="pn">
+          <div class="pt">Alertas de desvio</div>
+          <div class="al ri"><i class="ti ti-alert-triangle ai ri"></i><div><span class="at ri">Clínicas Populares Norte</span><span class="ab">Desvio de −58% · CI Nº 2025-041 pendente de aprovação · Risco de perda de desembolso Q3.</span></div></div>
+          <div class="al wn"><i class="ti ti-alert-triangle ai wn"></i><div><span class="at wn">Assistência Técnica Rural</span><span class="ab">Desvio de −18% · Replanejamento submetido · Aguarda análise do Gerente ISP.</span></div></div>
+          <div class="al wn"><i class="ti ti-clock ai wn"></i><div><span class="at wn">Capacitação Economia Solidária</span><span class="ab">3 parcelas bloqueadas — documentação pendente da OSC executora.</span></div></div>
+          <div class="al ok" style="margin-bottom:0"><i class="ti ti-check ai ok"></i><div><span class="at ok">14 projetos dentro do planejado</span><span class="ab">Desvio < 5% — execução dentro do corridor de tolerância.</span></div></div>
+        </div>
+      </div>
+
+      <!-- TABELA DE PROJETOS -->
+      <div class="t-wrap">
+        <div style="padding:13px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EEF0F3">
+          <span style="font-size:12px;font-weight:600;color:#1A2332">Execução financeira por projeto</span>
+          <div style="display:flex;gap:6px"><button class="btn btn-outline" style="padding:4px 10px;font-size:11px"><i class="ti ti-download"></i> Exportar</button></div>
+        </div>
+        <div class="t-head" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px">
+          <div class="th">Projeto / Parceiro</div>
+          <div class="th">Tipo</div>
+          <div class="th">Orçado</div>
+          <div class="th">Desembolsado</div>
+          <div class="th">Exec. fin.</div>
+          <div class="th">Status</div>
+          <div class="th"></div>
+        </div>
+        <!-- rows -->
+        <div class="t-row" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px" onclick="openDrawer()">
+          <div class="td"><div><div class="proj-name">Renda Mínima e Inclusão Produtiva</div><div class="proj-sub">OSC Veredas · Manaus</div></div></div>
+          <div class="td"><span class="tag osc">OSC</span></div>
+          <div class="td mono">R$ 1.800.000</div>
+          <div class="td mono" style="color:#5A9E00">R$ 1.404.000</div>
+          <div class="td"><div style="flex:1;height:5px;background:#EEF0F3;border-radius:3px;margin-right:6px"><div style="width:78%;height:100%;background:#5A9E00;border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#4A5568">78%</span></div>
+          <div class="td"><span class="flag ok"><i class="ti ti-check" style="font-size:10px"></i>OK</span></div>
+          <div class="td"><div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#B0BAC6;cursor:pointer"><i class="ti ti-dots-vertical" style="font-size:15px"></i></div></div>
+        </div>
+        <div class="t-row" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px" onclick="openDrawer()">
+          <div class="td"><div><div class="proj-name">Clínicas Populares — Periferia Norte</div><div class="proj-sub">Fundação Bem-Estar · Belém</div></div></div>
+          <div class="td"><span class="tag dir">Exec. direta</span></div>
+          <div class="td mono">R$ 3.200.000</div>
+          <div class="td mono" style="color:#E05050">R$ 1.344.000</div>
+          <div class="td"><div style="flex:1;height:5px;background:#EEF0F3;border-radius:3px;margin-right:6px"><div style="width:42%;height:100%;background:#E05050;border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#E05050">42%</span></div>
+          <div class="td"><span class="flag ri"><i class="ti ti-alert-triangle" style="font-size:10px"></i>Risco</span></div>
+          <div class="td"><div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#B0BAC6;cursor:pointer"><i class="ti ti-dots-vertical" style="font-size:15px"></i></div></div>
+        </div>
+        <div class="t-row" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px">
+          <div class="td"><div><div class="proj-name">Juventude em Ação — Esporte e Cultura</div><div class="proj-sub">Instituto Caminhos · Santos</div></div></div>
+          <div class="td"><span class="tag dir">Exec. direta</span></div>
+          <div class="td mono">R$ 620.000</div>
+          <div class="td mono" style="color:#5A9E00">R$ 564.200</div>
+          <div class="td"><div style="flex:1;height:5px;background:#EEF0F3;border-radius:3px;margin-right:6px"><div style="width:91%;height:100%;background:#5A9E00;border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#4A5568">91%</span></div>
+          <div class="td"><span class="flag ok"><i class="ti ti-check" style="font-size:10px"></i>OK</span></div>
+          <div class="td"><div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#B0BAC6;cursor:pointer"><i class="ti ti-dots-vertical" style="font-size:15px"></i></div></div>
+        </div>
+        <div class="t-row" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px">
+          <div class="td"><div><div class="proj-name">Assistência Técnica Rural — Semiárido</div><div class="proj-sub">Instituto Araguaia · Nordeste</div></div></div>
+          <div class="td"><span class="tag osc">OSC</span></div>
+          <div class="td mono">R$ 1.100.000</div>
+          <div class="td mono" style="color:#D4922A">R$ 715.000</div>
+          <div class="td"><div style="flex:1;height:5px;background:#EEF0F3;border-radius:3px;margin-right:6px"><div style="width:65%;height:100%;background:#D4922A;border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#D4922A">65%</span></div>
+          <div class="td"><span class="flag at"><i class="ti ti-clock" style="font-size:10px"></i>Atenção</span></div>
+          <div class="td"><div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#B0BAC6;cursor:pointer"><i class="ti ti-dots-vertical" style="font-size:15px"></i></div></div>
+        </div>
+        <div class="t-row" style="grid-template-columns:2fr 90px 110px 110px 80px 90px 70px">
+          <div class="td"><div><div class="proj-name">Mulheres na Tecnologia — Expansão 2025</div><div class="proj-sub">ISP Direto · Recife</div></div></div>
+          <div class="td"><span class="tag lei">Lei incentivo</span></div>
+          <div class="td mono">R$ 560.000</div>
+          <div class="td mono" style="color:#5A9E00">R$ 470.400</div>
+          <div class="td"><div style="flex:1;height:5px;background:#EEF0F3;border-radius:3px;margin-right:6px"><div style="width:84%;height:100%;background:#5A9E00;border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#4A5568">84%</span></div>
+          <div class="td"><span class="flag ok"><i class="ti ti-check" style="font-size:10px"></i>OK</span></div>
+          <div class="td"><div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#B0BAC6;cursor:pointer"><i class="ti ti-dots-vertical" style="font-size:15px"></i></div></div>
+        </div>
+        <div style="padding:10px 18px;border-top:1px solid #EEF0F3;font-size:11px;color:#8896A8;display:flex;align-items:center;justify-content:space-between">
+          <span>Exibindo 5 de 34 projetos ativos</span>
+          <div style="display:flex;gap:6px"><button class="btn btn-outline" style="padding:3px 10px;font-size:11px">Anterior</button><button class="btn btn-outline" style="padding:3px 10px;font-size:11px">Próxima</button></div>
+        </div>
+      </div>
+
+    </div><!-- /v-execucao -->
+
+    <!-- ══════ VIEW: DESEMBOLSOS ══════ -->
+    <div id="v-desembolsos" style="display:none">
+      <div class="g21">
+        <div class="pn" style="padding:0;overflow:hidden">
+          <div style="padding:13px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EEF0F3">
+            <span style="font-size:12px;font-weight:600;color:#1A2332">Cronograma de desembolsos — 2025</span>
+            <button class="btn btn-primary" style="padding:5px 12px;font-size:11px" onclick="openDrawer()"><i class="ti ti-plus"></i> Novo</button>
+          </div>
+          <div class="t-head" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px">
+            <div class="th">#</div><div class="th">Projeto / Parceiro</div><div class="th">Vencimento</div><div class="th">Valor</div><div class="th">Status SAP</div><div class="th">Situação</div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px" onclick="openDrawer()">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">001</div>
+            <div class="td"><div><div class="proj-name">Renda Mínima — Parcela 5</div><div class="proj-sub">OSC Veredas</div></div></div>
+            <div class="td" style="font-size:11.5px">01 Jun 2025</div>
+            <div class="td mono">R$ 225.000</div>
+            <div class="td"><span class="tag sap"><i class="ti ti-check" style="font-size:10px"></i> SAP OK</span></div>
+            <div class="td"><span class="flag ok">Pago</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px" onclick="openDrawer()">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">002</div>
+            <div class="td"><div><div class="proj-name">Juventude em Ação — Parcela 4</div><div class="proj-sub">Inst. Caminhos</div></div></div>
+            <div class="td" style="font-size:11.5px">15 Jun 2025</div>
+            <div class="td mono">R$ 77.500</div>
+            <div class="td"><span class="tag sap"><i class="ti ti-check" style="font-size:10px"></i> SAP OK</span></div>
+            <div class="td"><span class="flag ok">Pago</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px" onclick="openDrawer()">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">003</div>
+            <div class="td"><div><div class="proj-name">Mulheres na Tecnologia — Parcela 3</div><div class="proj-sub">ISP Direto</div></div></div>
+            <div class="td" style="font-size:11.5px">01 Jul 2025</div>
+            <div class="td mono">R$ 140.000</div>
+            <div class="td"><span class="tag pend">Aguardando CI</span></div>
+            <div class="td"><span class="flag at">Pendente</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px" onclick="openDrawer()">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">004</div>
+            <div class="td"><div><div class="proj-name">Clínicas Populares — Parcela 4</div><div class="proj-sub">Fund. Bem-Estar</div></div></div>
+            <div class="td" style="font-size:11.5px">01 Jul 2025</div>
+            <div class="td mono">R$ 400.000</div>
+            <div class="td"><span class="flag ri" style="border-radius:5px;font-size:10px">Bloqueado</span></div>
+            <div class="td"><span class="flag ri">Bloqueado</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">005</div>
+            <div class="td"><div><div class="proj-name">Assist. Técnica Rural — Parcela 3</div><div class="proj-sub">Inst. Araguaia</div></div></div>
+            <div class="td" style="font-size:11.5px">15 Jul 2025</div>
+            <div class="td mono">R$ 275.000</div>
+            <div class="td"><span class="tag pend">Em fila SAP</span></div>
+            <div class="td"><span class="flag at">Pendente</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:auto 2fr 1fr 100px 90px 80px">
+            <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8896A8;min-width:36px">006</div>
+            <div class="td"><div><div class="proj-name">Renda Mínima — Parcela 6 (final)</div><div class="proj-sub">OSC Veredas</div></div></div>
+            <div class="td" style="font-size:11.5px">01 Dez 2025</div>
+            <div class="td mono">R$ 225.000</div>
+            <div class="td"><span style="font-size:10.5px;color:#B0BAC6">Não iniciado</span></div>
+            <div class="td"><span class="flag pend">Futuro</span></div>
+          </div>
+          <div style="padding:10px 18px;border-top:1px solid #EEF0F3;font-size:11px;color:#8896A8;display:flex;justify-content:space-between;align-items:center">
+            <span>Exibindo 6 de 47 parcelas do ciclo</span>
+            <div style="display:flex;gap:6px"><button class="btn btn-outline" style="padding:3px 10px;font-size:11px">Próxima</button></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="pn">
+            <div class="pt">Resumo do ciclo 2025</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div class="ms"><div class="ms-n" style="color:#5A9E00">R$8,7M</div><div class="ms-l">Pago</div></div>
+              <div class="ms"><div class="ms-n" style="color:#D4922A">R$5,5M</div><div class="ms-l">A pagar</div></div>
+              <div class="ms"><div class="ms-n">47</div><div class="ms-l">Total de parcelas</div></div>
+              <div class="ms"><div class="ms-n" style="color:#E05050">3</div><div class="ms-l">Bloqueadas</div></div>
+            </div>
+            <div class="pg"><div class="pgm"><span>Desembolsado vs. orçado</span><span style="color:#5A9E00;font-weight:600">61%</span></div><div class="pgb-lg"><div class="pgf" style="width:61%;background:#5A9E00"></div></div></div>
+          </div>
+          <div class="pn">
+            <div class="pt">Próximos vencimentos</div>
+            <div class="desemb-item">
+              <span class="desemb-num">7d</span>
+              <div class="desemb-body"><div class="desemb-title">Mulheres na Tecnologia — P3</div><div class="desemb-meta">ISP Direto · CI pendente</div></div>
+              <span class="desemb-val">R$ 140K</span>
+            </div>
+            <div class="desemb-item">
+              <span class="desemb-num">14d</span>
+              <div class="desemb-body"><div class="desemb-title">Clínicas Populares — P4</div><div class="desemb-meta" style="color:#C04040">Fund. Bem-Estar · Bloqueado</div></div>
+              <span class="desemb-val" style="color:#E05050">R$ 400K</span>
+            </div>
+            <div class="desemb-item">
+              <span class="desemb-num">21d</span>
+              <div class="desemb-body"><div class="desemb-title">Assist. Técnica Rural — P3</div><div class="desemb-meta">Inst. Araguaia · Em fila</div></div>
+              <span class="desemb-val">R$ 275K</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /v-desembolsos -->
+
+    <!-- ══════ VIEW: CI & SAP ══════ -->
+    <div id="v-ci-sap" style="display:none">
+      <div class="g2" style="margin-bottom:12px">
+        <!-- PIPELINE SAP -->
+        <div class="pn">
+          <div class="pt">Pipeline de automação SAP — fluxo ativo</div>
+          <div style="margin-bottom:12px;padding:8px 12px;background:#EAF5D4;border:1px solid #B8DC80;border-radius:8px;font-size:11.5px;color:#3A6E00">
+            <strong>Integração ativa:</strong> SAP R/3 via RFC/BAPI &nbsp;·&nbsp; Última sincronização: há 12 min &nbsp;·&nbsp; 12 lançamentos processados este trimestre
+          </div>
+          <div class="sap-flow">
+            <div class="sap-step">
+              <div class="sap-node done"><i class="ti ti-file-text"></i></div>
+              <div class="sap-label">Geração CI</div>
+              <div class="sap-sub">Automático</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node done"><i class="ti ti-circle-check"></i></div>
+              <div class="sap-label">Aprovação digital</div>
+              <div class="sap-sub">Ger. ISP + Controladoria</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node done"><i class="ti ti-shopping-cart"></i></div>
+              <div class="sap-label">ME21N</div>
+              <div class="sap-sub">Pedido SAP</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node done"><i class="ti ti-truck-delivery"></i></div>
+              <div class="sap-label">MIGO</div>
+              <div class="sap-sub">Receb. físico</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node curr"><i class="ti ti-receipt"></i></div>
+              <div class="sap-label">MIRO</div>
+              <div class="sap-sub">Receb. fiscal</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node wait"><i class="ti ti-building-bank"></i></div>
+              <div class="sap-label">FBL1N</div>
+              <div class="sap-sub">Pagamento</div>
+            </div>
+            <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:18px"><i class="ti ti-chevron-right" style="color:#B0BAC6;font-size:16px"></i></div>
+            <div class="sap-step">
+              <div class="sap-node wait"><i class="ti ti-file-download"></i></div>
+              <div class="sap-label">Comprovante PDF</div>
+              <div class="sap-sub">Automático</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:#F8FAFB;border-radius:7px;font-size:11.5px;color:#4A5568;display:flex;align-items:center;gap:8px">
+            <i class="ti ti-info-circle" style="color:#3AAABB;font-size:15px;flex-shrink:0"></i>
+            CI 2025-043 aguarda confirmação do MIRO · Pedido SAP #4500012831 · Processado há 2h
+          </div>
+        </div>
+
+        <!-- MÉTRICAS SAP -->
+        <div class="pn">
+          <div class="pt">Eficiência da automação — Q2 2025</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            <div class="ms"><div class="ms-n" style="color:#5A9E00">18</div><div class="ms-l">CIs geradas automaticamente</div></div>
+            <div class="ms"><div class="ms-n" style="color:#5A9E00">12</div><div class="ms-l">ME21N processadas no SAP</div></div>
+            <div class="ms"><div class="ms-n" style="color:#5A9E00">11</div><div class="ms-l">MIGO + MIRO concluídos</div></div>
+            <div class="ms"><div class="ms-n" style="color:#E05050">1</div><div class="ms-l">Erros de integração</div></div>
+          </div>
+          <div class="pg"><div class="pgm"><span>Automação vs. manual</span><span style="color:#5A9E00;font-weight:600">83%</span></div><div class="pgb-md"><div class="pgf" style="width:83%;background:#5A9E00"></div></div></div>
+          <div style="margin-top:10px;padding:8px 10px;background:#EAF5D4;border:1px solid #B8DC80;border-radius:7px;font-size:11.5px;color:#3A6E00">
+            <strong>70+ lançamentos manuais eliminados</strong> por trimestre vs. processo anterior em Excel e Word.
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA CIs -->
+      <div class="t-wrap">
+        <div style="padding:13px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EEF0F3">
+          <span style="font-size:12px;font-weight:600;color:#1A2332">Comunicações Internas (CI) — histórico</span>
+          <button class="btn btn-primary" style="padding:5px 12px;font-size:11px"><i class="ti ti-plus"></i> Gerar CI</button>
+        </div>
+        <div class="t-head" style="grid-template-columns:100px 2fr 100px 110px 100px 90px">
+          <div class="th">Nº CI</div><div class="th">Projeto / Parceiro</div><div class="th">Data emissão</div><div class="th">Valor</div><div class="th">SAP Pedido</div><div class="th">Status</div>
+        </div>
+        <div class="ci-item" onclick="openDrawer()">
+          <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:80px;color:#1A2332">2025-041</div>
+          <div class="td"><div><div class="proj-name">Clínicas Populares Norte — P4</div><div class="proj-sub">Fund. Bem-Estar</div></div></div>
+          <div class="td" style="font-size:11.5px;min-width:90px">02 Jun 2025</div>
+          <div class="td mono" style="min-width:100px">R$ 400.000</div>
+          <div class="td" style="min-width:90px"><span style="font-size:11.5px;color:#C04040">Bloqueado</span></div>
+          <div style="min-width:80px"><span class="flag ri">Pendente</span></div>
+        </div>
+        <div class="ci-item" onclick="openDrawer()">
+          <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:80px;color:#1A2332">2025-040</div>
+          <div class="td"><div><div class="proj-name">Renda Mínima — Parcela 5</div><div class="proj-sub">OSC Veredas</div></div></div>
+          <div class="td" style="font-size:11.5px;min-width:90px">25 Mai 2025</div>
+          <div class="td mono" style="min-width:100px">R$ 225.000</div>
+          <div class="td" style="min-width:90px"><span style="font-size:11.5px;color:#5A9E00">#4500012831</span></div>
+          <div style="min-width:80px"><span class="flag ok">Pago</span></div>
+        </div>
+        <div class="ci-item">
+          <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:80px;color:#1A2332">2025-039</div>
+          <div class="td"><div><div class="proj-name">Juventude em Ação — Parcela 4</div><div class="proj-sub">Inst. Caminhos</div></div></div>
+          <div class="td" style="font-size:11.5px;min-width:90px">20 Mai 2025</div>
+          <div class="td mono" style="min-width:100px">R$ 77.500</div>
+          <div class="td" style="min-width:90px"><span style="font-size:11.5px;color:#5A9E00">#4500012788</span></div>
+          <div style="min-width:80px"><span class="flag ok">Pago</span></div>
+        </div>
+        <div class="ci-item">
+          <div class="td" style="font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:80px;color:#1A2332">2025-038</div>
+          <div class="td"><div><div class="proj-name">Mulheres na Tecnologia — P2</div><div class="proj-sub">ISP Direto</div></div></div>
+          <div class="td" style="font-size:11.5px;min-width:90px">10 Mai 2025</div>
+          <div class="td mono" style="min-width:100px">R$ 140.000</div>
+          <div class="td" style="min-width:90px"><span style="font-size:11.5px;color:#5A9E00">#4500012750</span></div>
+          <div style="min-width:80px"><span class="flag ok">Pago</span></div>
+        </div>
+      </div>
+    </div><!-- /v-ci-sap -->
+
+    <!-- ══════ VIEW: PRESTAÇÃO DE CONTAS ══════ -->
+    <div id="v-prestacao" style="display:none">
+      <div class="g21">
+        <div class="t-wrap">
+          <div style="padding:13px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EEF0F3">
+            <span style="font-size:12px;font-weight:600;color:#1A2332">Prestações de contas — portfólio 2025</span>
+            <div style="display:flex;gap:6px">
+              <span style="font-size:11px;color:#8896A8;display:flex;align-items:center">22 projetos</span>
+              <button class="btn btn-outline" style="padding:4px 10px;font-size:11px"><i class="ti ti-download"></i> Exportar</button>
+            </div>
+          </div>
+          <div class="t-head" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="th">Projeto / Parceiro</div><div class="th">Vencimento</div><div class="th">Enviado em</div><div class="th">Exec.</div><div class="th">Status</div>
+          </div>
+          <div class="t-row" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="td"><div><div class="proj-name">Microcrédito Produtivo — Ciclo 2024</div><div class="proj-sub">OSC Empreende Já</div></div></div>
+            <div class="td" style="font-size:11.5px">31 Jan 2025</div>
+            <div class="td" style="font-size:11.5px;color:#5A9E00">28 Jan 2025</div>
+            <div class="td mono">100%</div>
+            <div class="td"><span class="flag ok">Aprovada</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="td"><div><div class="proj-name">Creches Comunitárias — Fase I</div><div class="proj-sub">Fundação Semear</div></div></div>
+            <div class="td" style="font-size:11.5px">28 Fev 2025</div>
+            <div class="td" style="font-size:11.5px;color:#5A9E00">20 Fev 2025</div>
+            <div class="td mono">100%</div>
+            <div class="td"><span class="flag ok">Aprovada</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="td"><div><div class="proj-name">Renda Mínima e Inclusão Produtiva</div><div class="proj-sub">OSC Veredas</div></div></div>
+            <div class="td" style="font-size:11.5px">30 Jun 2025</div>
+            <div class="td" style="font-size:11.5px;color:#D4922A">Não enviada</div>
+            <div class="td mono" style="color:#D4922A">78%</div>
+            <div class="td"><span class="flag at">Em aberto</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="td"><div><div class="proj-name">Clínicas Populares — Periferia Norte</div><div class="proj-sub">Fund. Bem-Estar</div></div></div>
+            <div class="td" style="font-size:11.5px">30 Jun 2025</div>
+            <div class="td" style="font-size:11.5px;color:#C04040">Atrasada</div>
+            <div class="td mono" style="color:#E05050">42%</div>
+            <div class="td"><span class="flag ri">Atrasada</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:2fr 100px 100px 80px 90px">
+            <div class="td"><div><div class="proj-name">Juvenil em Ação — Esporte e Cultura</div><div class="proj-sub">Inst. Caminhos</div></div></div>
+            <div class="td" style="font-size:11.5px">30 Jun 2025</div>
+            <div class="td" style="font-size:11.5px;color:#5A9E00">18 Mai 2025</div>
+            <div class="td mono">91%</div>
+            <div class="td"><span class="flag ok">Em análise</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="pn">
+            <div class="pt">Situação geral</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div class="ms"><div class="ms-n" style="color:#5A9E00">14</div><div class="ms-l">Aprovadas</div></div>
+              <div class="ms"><div class="ms-n" style="color:#3AAABB">4</div><div class="ms-l">Em análise</div></div>
+              <div class="ms"><div class="ms-n" style="color:#D4922A">3</div><div class="ms-l">Em aberto</div></div>
+              <div class="ms"><div class="ms-n" style="color:#E05050">1</div><div class="ms-l">Atrasadas</div></div>
+            </div>
+            <div class="pg"><div class="pgm"><span>Conformidade geral</span><span style="color:#5A9E00;font-weight:600">82%</span></div><div class="pgb-md"><div class="pgf" style="width:82%;background:#5A9E00"></div></div></div>
+          </div>
+          <div class="pn">
+            <div class="pt">Alertas de vencimento</div>
+            <div class="al ri"><i class="ti ti-alert-triangle ai ri"></i><div><span class="at ri">Clínicas Populares</span><span class="ab">Prestação de contas atrasada 12 dias — risco de bloqueio de próximas parcelas.</span></div></div>
+            <div class="al wn"><i class="ti ti-clock ai wn"></i><div><span class="at wn">Renda Mínima</span><span class="ab">Vencimento em 18 dias — relatório ainda não submetido pela OSC.</span></div></div>
+          </div>
+          <div class="pn">
+            <div class="pt">Carta trimestral SAP</div>
+            <div style="font-size:12.5px;color:#4A5568;line-height:1.6;margin-bottom:12px">O sistema gera automaticamente a carta consolidada de projetos para a contabilidade ao final de cada trimestre, com balanço de repasses e relatório de apuração de IRPJ.</div>
+            <button class="btn btn-outline" style="width:100%;justify-content:center"><i class="ti ti-file-text"></i> Gerar carta Q2 2025</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /v-prestacao -->
+
+    <!-- ══════ VIEW: CONCILIAÇÃO ══════ -->
+    <div id="v-conciliacao" style="display:none">
+      <div class="g21">
+        <div class="pn">
+          <div class="pt">Conciliação bancária — extrato vs. ImpactOS
+            <span class="flag ok" style="font-size:10px">Atualizado hoje</span>
+          </div>
+          <div style="margin-bottom:12px;display:flex;gap:8px">
+            <div style="flex:1;padding:12px;background:#EAF5D4;border:1px solid #B8DC80;border-radius:8px;text-align:center">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:#3A6E00">R$ 8,71M</div>
+              <div style="font-size:10.5px;color:#5A8A20;margin-top:3px">Extrato bancário</div>
+            </div>
+            <div style="display:flex;align-items:center;padding:0 6px;color:#B0BAC6;font-size:18px">=</div>
+            <div style="flex:1;padding:12px;background:#EAF5D4;border:1px solid #B8DC80;border-radius:8px;text-align:center">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:#3A6E00">R$ 8,70M</div>
+              <div style="font-size:10.5px;color:#5A8A20;margin-top:3px">ImpactOS registrado</div>
+            </div>
+          </div>
+          <div style="padding:8px 12px;background:#FEF3DB;border:1px solid #F0D898;border-radius:8px;font-size:11.5px;color:#8A5C08;margin-bottom:12px">
+            <strong>Diferença de R$ 10.000</strong> — 1 lançamento pendente de identificação (data: 28 Mai 2025)
+          </div>
+          <div class="t-head" style="grid-template-columns:90px 2fr 110px 80px" style="margin-top:4px">
+            <div class="th">Data</div><div class="th">Descrição</div><div class="th">Valor</div><div class="th">Status</div>
+          </div>
+          <div class="t-row" style="grid-template-columns:90px 2fr 110px 80px">
+            <div class="td" style="font-size:11.5px">01 Jun 2025</div>
+            <div class="td"><div class="proj-name">OSC Veredas — Parcela 5 Renda Mínima</div></div>
+            <div class="td mono">R$ 225.000</div>
+            <div class="td"><span class="flag ok">Conciliado</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:90px 2fr 110px 80px">
+            <div class="td" style="font-size:11.5px">15 Jun 2025</div>
+            <div class="td"><div class="proj-name">Inst. Caminhos — P4 Juventude em Ação</div></div>
+            <div class="td mono">R$ 77.500</div>
+            <div class="td"><span class="flag ok">Conciliado</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:90px 2fr 110px 80px">
+            <div class="td" style="font-size:11.5px">28 Mai 2025</div>
+            <div class="td"><div class="proj-name" style="color:#B07A10">Lançamento não identificado</div></div>
+            <div class="td mono" style="color:#D4922A">R$ 10.000</div>
+            <div class="td"><span class="flag at">Pendente</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:90px 2fr 110px 80px">
+            <div class="td" style="font-size:11.5px">10 Mai 2025</div>
+            <div class="td"><div class="proj-name">ISP Direto — P2 Mulheres na Tecnologia</div></div>
+            <div class="td mono">R$ 140.000</div>
+            <div class="td"><span class="flag ok">Conciliado</span></div>
+          </div>
+          <div class="t-row" style="grid-template-columns:90px 2fr 110px 80px">
+            <div class="td" style="font-size:11.5px">01 Mai 2025</div>
+            <div class="td"><div class="proj-name">Inst. Araguaia — P2 Assist. Técnica Rural</div></div>
+            <div class="td mono">R$ 275.000</div>
+            <div class="td"><span class="flag ok">Conciliado</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="pn">
+            <div class="pt">Status da conciliação</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div class="ms"><div class="ms-n" style="color:#5A9E00">44</div><div class="ms-l">Conciliados</div></div>
+              <div class="ms"><div class="ms-n" style="color:#D4922A">1</div><div class="ms-l">Pendentes</div></div>
+              <div class="ms"><div class="ms-n" style="color:#5A9E00">R$8,7M</div><div class="ms-l">Total conciliado</div></div>
+              <div class="ms"><div class="ms-n" style="color:#D4922A">R$10K</div><div class="ms-l">Diferença</div></div>
+            </div>
+            <div class="pg" style="margin-bottom:0"><div class="pgm"><span>Taxa de conciliação</span><span style="color:#5A9E00;font-weight:600">97,8%</span></div><div class="pgb-md"><div class="pgf" style="width:97.8%;background:#5A9E00"></div></div></div>
+          </div>
+          <div class="pn">
+            <div class="pt">Comprovantes gerados</div>
+            <div style="font-size:12.5px;color:#4A5568;line-height:1.6;margin-bottom:12px">Sistema gera e renomeia automaticamente os comprovantes PDF após confirmação do FBL1N no SAP.</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid #F0F2F5"><span style="color:#3A4556">Comprovante_Veredas_P5_Jun25.pdf</span><span class="flag ok">Enviado</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid #F0F2F5"><span style="color:#3A4556">Comprovante_Caminhos_P4_Jun25.pdf</span><span class="flag ok">Enviado</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0"><span style="color:#3A4556">Comprovante_Araguaia_P2_Mai25.pdf</span><span class="flag ok">Enviado</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /v-conciliacao -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /body -->
+</div><!-- /db -->
+
+<!-- DRAWER -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer">
+    <div class="dr-hd">
+      <div class="dr-hd-bar" style="background:#5A9E00"></div>
+      <div style="flex:1">
+        <div class="dr-title">Renda Mínima e Inclusão Produtiva — Desembolso P5</div>
+        <div class="dr-sub">OSC Veredas · Manaus · R$ 225.000 · 01 Jun 2025</div>
+      </div>
+      <div class="dr-close" onclick="closeDrawer()"><i class="ti ti-x" style="font-size:16px"></i></div>
+    </div>
+    <div class="dr-tabs">
+      <div class="dr-tab on" onclick="drtab(this,'dt-geral')"><i class="ti ti-info-circle"></i>Dados</div>
+      <div class="dr-tab" onclick="drtab(this,'dt-sap')"><i class="ti ti-cpu"></i>SAP</div>
+      <div class="dr-tab" onclick="drtab(this,'dt-historico')"><i class="ti ti-history"></i>Histórico</div>
+    </div>
+    <div class="dr-body">
+      <div id="dt-geral">
+        <div class="dr-sec">
+          <div class="dr-sec-t">Dados do desembolso</div>
+          <div class="dr-grid">
+            <div class="dr-f"><div class="dr-l">Número CI</div><div class="dr-v mono">2025-040</div></div>
+            <div class="dr-f"><div class="dr-l">Parcela</div><div class="dr-v">5ª de 8 parcelas</div></div>
+            <div class="dr-f"><div class="dr-l">Valor</div><div class="dr-v mono" style="color:#5A9E00">R$ 225.000,00</div></div>
+            <div class="dr-f"><div class="dr-l">Data pagamento</div><div class="dr-v">01 Jun 2025</div></div>
+            <div class="dr-f"><div class="dr-l">Tipo de projeto</div><div class="dr-v">OSC parceira</div></div>
+            <div class="dr-f"><div class="dr-l">Lei de incentivo</div><div class="dr-v">IRPJ — Art. 26</div></div>
+            <div class="dr-f"><div class="dr-l">Aprovado por</div><div class="dr-v">Erika Lima</div></div>
+            <div class="dr-f"><div class="dr-l">Controladoria</div><div class="dr-v">Dir. Financeiro</div></div>
+          </div>
+        </div>
+        <div class="dr-sec">
+          <div class="dr-sec-t">Execução financeira do projeto</div>
+          <div class="dr-grid" style="margin-bottom:10px">
+            <div class="dr-f"><div class="dr-l">Orçado total</div><div class="dr-v mono">R$ 1.800.000</div></div>
+            <div class="dr-f"><div class="dr-l">Desembolsado</div><div class="dr-v mono" style="color:#5A9E00">R$ 1.404.000</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#6B7A8D;margin-bottom:4px"><span>Execução financeira</span><span style="color:#5A9E00;font-weight:600">78%</span></div>
+          <div style="height:8px;background:#EEF0F3;border-radius:4px"><div style="width:78%;height:100%;background:#5A9E00;border-radius:4px"></div></div>
+        </div>
+      </div>
+      <div id="dt-sap" style="display:none">
+        <div class="dr-sec">
+          <div class="dr-sec-t">Rastreio SAP</div>
+          <div class="dr-grid">
+            <div class="dr-f"><div class="dr-l">Pedido ME21N</div><div class="dr-v mono" style="color:#5A9E00">#4500012831</div></div>
+            <div class="dr-f"><div class="dr-l">Status ME21N</div><div class="dr-v"><span class="flag ok">Processado</span></div></div>
+            <div class="dr-f"><div class="dr-l">MIGO — Receb. físico</div><div class="dr-v"><span class="flag ok">Confirmado</span></div></div>
+            <div class="dr-f"><div class="dr-l">MIRO — Receb. fiscal</div><div class="dr-v"><span class="flag ok">Confirmado</span></div></div>
+            <div class="dr-f"><div class="dr-l">FBL1N — Pagamento</div><div class="dr-v"><span class="flag ok">Concluído</span></div></div>
+            <div class="dr-f"><div class="dr-l">Comprovante PDF</div><div class="dr-v"><span class="flag ok">Enviado</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="dt-historico" style="display:none">
+        <div class="dr-sec">
+          <div class="dr-sec-t">Trilha de auditoria</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;color:#3A4556;padding:8px 10px;background:#F8FAFB;border-radius:7px;border:1px solid #F0F2F5"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8896A8">01 Jun 2025 09:44</span><br>Pagamento confirmado no FBL1N · Comprovante gerado automaticamente</div>
+            <div style="font-size:12px;color:#3A4556;padding:8px 10px;background:#F8FAFB;border-radius:7px;border:1px solid #F0F2F5"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8896A8">31 Mai 2025 16:30</span><br>MIGO e MIRO disparados automaticamente após confirmação ME21N</div>
+            <div style="font-size:12px;color:#3A4556;padding:8px 10px;background:#F8FAFB;border-radius:7px;border:1px solid #F0F2F5"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8896A8">30 Mai 2025 11:15</span><br>ME21N #4500012831 criado no SAP via integração RFC</div>
+            <div style="font-size:12px;color:#3A4556;padding:8px 10px;background:#F8FAFB;border-radius:7px;border:1px solid #F0F2F5"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8896A8">25 Mai 2025 14:00</span><br>CI 2025-040 aprovada — Erika Lima + Dir. Financeiro</div>
+            <div style="font-size:12px;color:#3A4556;padding:8px 10px;background:#F8FAFB;border-radius:7px;border:1px solid #F0F2F5"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8896A8">24 Mai 2025 09:00</span><br>CI 2025-040 gerada automaticamente — ImpactOS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dr-actions">
+      <button class="btn btn-outline" style="flex:1"><i class="ti ti-edit"></i>Editar</button>
+      <button class="btn btn-outline"><i class="ti ti-file-download"></i>Comprovante</button>
+      <button class="btn btn-primary"><i class="ti ti-rotate-clockwise"></i>Reprocessar SAP</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── VIEW SWITCHING ──
+function sv(view, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  ['execucao','desembolsos','ci-sap','prestacao','conciliacao'].forEach(v=>{
+    const d=document.getElementById('v-'+v);
+    if(d) d.style.display=(v===view)?'block':'none';
+  });
+}
+
+// ── DRAWER ──
+function openDrawer(){ document.getElementById('modal-overlay').classList.add('open'); }
+function closeDrawer(){ document.getElementById('modal-overlay').classList.remove('open'); }
+function drtab(el, id){
+  document.querySelectorAll('.dr-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  ['dt-geral','dt-sap','dt-historico'].forEach(t=>{
+    const d=document.getElementById(t);
+    if(d) d.style.display=(t===id)?'block':'none';
+  });
+}
+
+// ── PT TABS ──
+function ptTab(el){
+  el.closest('.pt-tabs').querySelectorAll('.pt-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click',()=>ptTab(t)));
+
+// ── CURVA S CHART ──
+const ctx = document.getElementById('curvaChart');
+if(ctx){
+  new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+      datasets:[
+        {
+          label:'Exec. financeira real',
+          data:[320,680,1100,1640,2280,3050,null,null,null,null,null,null],
+          borderColor:'#5A9E00',backgroundColor:'rgba(90,158,0,.08)',
+          tension:.4,fill:true,pointRadius:3,borderWidth:2
+        },
+        {
+          label:'Exec. física real',
+          data:[280,590,980,1480,2100,2820,null,null,null,null,null,null],
+          borderColor:'#3AAABB',backgroundColor:'rgba(58,170,187,.06)',
+          tension:.4,fill:true,pointRadius:3,borderWidth:2
+        },
+        {
+          label:'Planejado',
+          data:[450,900,1450,2050,2700,3350,4050,4800,5550,6400,7300,8700],
+          borderColor:'#D4922A',backgroundColor:'transparent',
+          borderDash:[5,4],tension:.4,pointRadius:0,borderWidth:1.5
+        }
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#8896A8',font:{size:10}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8896A8',font:{size:10},
+           callback:v=>'R$'+(v/1000).toFixed(0)+'K'},min:0}
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
